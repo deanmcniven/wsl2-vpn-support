@@ -34,7 +34,10 @@ if ($vpn_state -eq "Up") {
     # Get key metrics for the WSL Network Interface
     echo "Determining WSL2 Interface parameters ..."
     $wsl_interface_index = (Get-NetAdapter -Name "$wsl_interface_name" | select -ExpandProperty ifIndex)
-    $wsl_interface_routemetric = (Get-NetRoute -InterfaceIndex $wsl_interface_index | select -ExpandProperty RouteMetric | Select-Object -First 1)
+
+    echo "Determining VPN Interface parameters ..."
+    $vpn_interface_index = (Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match "$vpn_interface_desc"} | select -ExpandProperty ifIndex)
+    $vpn_interface_routemetric = (Get-NetRoute -InterfaceIndex $vpn_interface_index | select -ExpandProperty RouteMetric | Sort-Object -Unique | Select-Object -First 1)
 
     # Get list of IPs for the WSL Guest(s)
     echo "Determining IP Addresses of WSL2 Guest(s) ..."
@@ -57,7 +60,7 @@ if ($vpn_state -eq "Up") {
     echo $wsl_guest_ips | Out-File -FilePath $state_file
     foreach ($ip IN $wsl_guest_ips) {
         echo "Creating route for $ip"
-        route add $ip mask 255.255.255.255 $ip metric $wsl_interface_routemetric if $wsl_interface_index
+        route add $ip mask 255.255.255.255 $ip metric $vpn_interface_routemetric if $wsl_interface_index
     }
 } else {
     echo "VPN is DOWN"
