@@ -1,3 +1,23 @@
+########### Elevate To Administrator If Necessary
+
+param([switch]$Elevated)
+
+function Test-Admin {
+    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
+    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
+}
+
+if ((Test-Admin) -eq $false)  {
+    echo "[DEBUG] Not an Administrator.  Attempting to elevate permissions."
+    if ($elevated) {
+        echo "[DEBUG] Failed to elevate.  Aborting."
+    } else {
+        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
+    }
+    exit
+}
+echo "Running with full privileges."
+
 ########### Configuration Parameters
 
 $vpn_interface_desc = "PANGP Virtual Ethernet Adapter"
