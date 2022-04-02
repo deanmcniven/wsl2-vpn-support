@@ -12,7 +12,7 @@ if ((Test-Admin) -eq $false)  {
     if ($elevated) {
         echo "[DEBUG] Failed to elevate.  Aborting."
     } else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
+        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-ExecutionPolicy Bypass -noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
     }
     exit
 }
