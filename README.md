@@ -86,6 +86,29 @@ The state file is used to cleanup created routes when:
 * IP Addresses change
 * Interface ID Changes
 
+## WSL Configuration
+Note, you may also need to configure DNS manually in the WSL2 guest. For Ubuntu proceed as follows:
+
+1. edit /etc/resolv.conf to contain:
+   ```
+   nameserver a.b.c.d
+   ```
+   where `a.b.c.d` is the DNS IP of your host network on the VPN. See [here](https://manpage.me/index.cgi?apropos=0&q=resolv.conf&sektion=0&manpath=FreeBSD+12-CURRENT+and+Ports&arch=default&format=html) for more details.
+
+2. Make the resolv.conf immutable by issuing:
+   ```bash
+   # chattr +i resolv.conf
+   ```
+   See [here](https://manpage.me/?q=chattr) for more details
+
+3. Prevent WSL from generating resolv.conf, by adding the following to `/etc/wsl.conf`
+   ```
+   [network]
+   generateResolvConf = false
+   ```
+   See [here](https://docs.microsoft.com/en-us/windows/wsl/wsl-config) for more details.
+
+4. Restart WSL to apply the above changes
 
 ## Installation
 
