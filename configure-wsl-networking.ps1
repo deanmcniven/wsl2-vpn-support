@@ -1,23 +1,3 @@
-########### Elevate To Administrator If Necessary
-
-param([switch]$Elevated)
-
-function Test-Admin {
-    $currentUser = New-Object Security.Principal.WindowsPrincipal $([Security.Principal.WindowsIdentity]::GetCurrent())
-    $currentUser.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
-}
-
-if ((Test-Admin) -eq $false)  {
-    echo "[DEBUG] Not an Administrator.  Attempting to elevate permissions."
-    if ($elevated) {
-        echo "[DEBUG] Failed to elevate.  Aborting."
-    } else {
-        Start-Process powershell.exe -Verb RunAs -ArgumentList ('-ExecutionPolicy Bypass -noprofile -noexit -file "{0}" -elevated' -f ($myinvocation.MyCommand.Definition))
-    }
-    exit
-}
-echo "Running with full privileges."
-
 ########### Configuration Parameters
 
 $vpn_interface_desc = "PANGP Virtual Ethernet Adapter"
@@ -72,9 +52,8 @@ if ($vpn_state -eq "Up") {
     $wsl_guest_ips = [System.Collections.ArrayList]@()
     if ($config_default_wsl_guest -gt 0) {
         $wsl_ip_info = (wsl ip -o addr | Select-String "$wsl_interface_id\s+inet ")
-        $guest_cidr = ($wsl_ip_info[0] -split '\s+' | Select-Object -Index 3)
-        $guest_ip = $cidr.ToString().Split('/')[0]
-
+        $guest_cidr  = ($wsl_ip_info[0] -split '\s+' | Select-Object -Index 3)
+        $guest_ip    = $cidr.ToString().Split('/')[0]
         if ([string]::IsNullOrEmpty($guest_ip))
         {
             echo "[DEBUG] No IP Found in default WSL2 Distribution, trying next.  (Is your default WSL2 non-interactive like Docker Desktop?)"
@@ -88,15 +67,8 @@ if ($vpn_state -eq "Up") {
 
     foreach ($guest_name IN $wsl_guest_list) {
         $guest_ip = (wsl --distribution $guest_name hostname -I)
-        if ([string]::IsNullOrEmpty($guest_ip))
-        {
-            echo "[DEBUG] No IP Found in WSL2 Distribution ($guest_name), trying next."
-        }
-        else
-        {
-            $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
-            $previous_ips.Remove($guest_ip.Trim())
-        }
+        $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
+        $previous_ips.Remove($guest_ip.Trim())
     }
     echo "[DEBUG] WSL2 Guest IP Addresses: Previous (Revised) = $previous_ips"
     echo "[DEBUG] WSL2 Guest IP Addresses: Current  = $wsl_guest_ips"
