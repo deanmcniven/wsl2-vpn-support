@@ -63,9 +63,15 @@ if ($vpn_state -eq "Up") {
     }
 
     foreach ($guest_name IN $wsl_guest_list) {
-        $guest_ip = (wsl --distribution $guest_name hostname -I)
-        $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
-        $previous_ips.Remove($guest_ip.Trim())
+        $wsl_ip_info = (wsl --distribution $guest_name ip -o addr | Select-String "$wsl_interface_id\s+inet ")
+        $guest_cidr  = ($wsl_ip_info[0] -split '\s+' | Select-Object -Index 3)
+        $guest_ip    = $guest_cidr.ToString().Split('/')[0]
+        if ([string]::IsNullOrEmpty($guest_ip)) {
+            echo "[DEBUG] No IP Found in default WSL2 Distribution, trying next.  (Is your default WSL2 non-interactive like Docker Desktop?)"
+        } else {
+            $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
+            $previous_ips.Remove($guest_ip.Trim())
+        }
     }
 
     echo "[DEBUG] WSL2 Guest IP Addresses: Previous (Revised) = $previous_ips"
