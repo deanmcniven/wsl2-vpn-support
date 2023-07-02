@@ -32,6 +32,7 @@ user customisation of the scripts behaviour:
 
 1. `$vpn_interface_desc`
 1. `$wsl_interface_name`
+1. `$wsl_interface_id`
 1. `$config_default_wsl_guest`
 1. `$wsl_guest_list`
 1. `$state_file`
@@ -55,6 +56,20 @@ This script will accept an exact or partial match.
 
 You can determine this value by executing `Get-NetAdapter` within Powershell and looking for
 the value contained in the `Name` property/column.
+
+This script expects an exact match for this parameter.
+
+
+### $wsl_interface_id
+
+`$wsl_interface_id` is used to select the WSL2 guest Interface by matching the ID within Linux.
+
+You can determine this value by executing `ip addr` and looking for the first word
+after the Numeric ID, for example: `2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1300`
+would have a network interface ID of `eth0`.  The original method of determining the
+IP address of the WSL2 host was to use the `hostname -I` command which breaks the `route add`
+command if there is more than a single IP address, such as the presence of an internal virtual
+adapter like if docker is installed within the WSL2 Linux guest.
 
 This script expects an exact match for this parameter.
 

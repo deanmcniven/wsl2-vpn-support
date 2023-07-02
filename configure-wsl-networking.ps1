@@ -2,6 +2,7 @@
 
 $vpn_interface_desc = "PANGP Virtual Ethernet Adapter"
 $wsl_interface_name = "vEthernet (WSL)"
+$wsl_interface_id   = "eth0"
 
 $config_default_wsl_guest = 1 # 0: False, 1: True
 $wsl_guest_list = @()
@@ -50,9 +51,18 @@ if ($vpn_state -eq "Up") {
     echo "Determining IP Addresses of WSL2 Guest(s) ..."
     $wsl_guest_ips = [System.Collections.ArrayList]@()
     if ($config_default_wsl_guest -gt 0) {
-        $guest_ip = (wsl hostname -I)
-        $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
-        $previous_ips.Remove($guest_ip.Trim())
+        $wsl_ip_info = (wsl ip -o addr | Select-String "$wsl_interface_id\s+inet ")
+        $guest_cidr  = ($wsl_ip_info[0] -split '\s+' | Select-Object -Index 3)
+        $guest_ip    = $cidr.ToString().Split('/')[0]
+        if ([string]::IsNullOrEmpty($guest_ip))
+        {
+            echo "[DEBUG] No IP Found in default WSL2 Distribution, trying next.  (Is your default WSL2 non-interactive like Docker Desktop?)"
+        }
+        else
+        {
+            $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
+            $previous_ips.Remove($guest_ip.Trim())
+        }
     }
 
     foreach ($guest_name IN $wsl_guest_list) {
