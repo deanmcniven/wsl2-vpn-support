@@ -38,7 +38,7 @@ if ($vpn_state -eq "Up") {
     echo "Determining WSL2 Interface parameters ..."
     $wsl_interface_index = (Get-NetAdapter -IncludeHidden -Name "$wsl_interface_name" | select -ExpandProperty ifIndex)
     echo "[DEBUG] WSL2 Interface Parameters: Index = $wsl_interface_index"
-    
+
     echo "Determining VPN Interface parameters ..."
     $vpn_interface_index = (Get-NetAdapter | Where-Object {$_.InterfaceDescription -Match "$vpn_interface_desc"} | select -ExpandProperty ifIndex)
     $vpn_interface_routemetric = (Get-NetRoute -InterfaceIndex $vpn_interface_index | select -ExpandProperty RouteMetric | Sort-Object -Unique | Select-Object -First 1)
@@ -54,12 +54,9 @@ if ($vpn_state -eq "Up") {
         $wsl_ip_info = (wsl ip -o addr | Select-String "$wsl_interface_id\s+inet ")
         $guest_cidr  = ($wsl_ip_info[0] -split '\s+' | Select-Object -Index 3)
         $guest_ip    = $guest_cidr.ToString().Split('/')[0]
-        if ([string]::IsNullOrEmpty($guest_ip))
-        {
+        if ([string]::IsNullOrEmpty($guest_ip)) {
             echo "[DEBUG] No IP Found in default WSL2 Distribution, trying next.  (Is your default WSL2 non-interactive like Docker Desktop?)"
-        }
-        else
-        {
+        } else {
             $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
             $previous_ips.Remove($guest_ip.Trim())
         }
@@ -70,6 +67,7 @@ if ($vpn_state -eq "Up") {
         $arrayId = $wsl_guest_ips.Add($guest_ip.Trim())
         $previous_ips.Remove($guest_ip.Trim())
     }
+
     echo "[DEBUG] WSL2 Guest IP Addresses: Previous (Revised) = $previous_ips"
     echo "[DEBUG] WSL2 Guest IP Addresses: Current  = $wsl_guest_ips"
 
