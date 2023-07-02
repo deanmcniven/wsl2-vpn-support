@@ -10,7 +10,7 @@ change where it will reconfigure the Windows systems routes to fix WSL2 networki
 
 ## Why is this script different?
 
-Most other solutions on the internet infolve settings the Interface Metric of the VPN
+Most other solutions on the internet involve setting the Interface Metric of the VPN
 interface to a really high number, essentially routing traffic from the WSL2 instance
 straight to the internet rather than over the VPN.
 
